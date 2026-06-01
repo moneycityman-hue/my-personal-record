@@ -14,6 +14,7 @@ type NoteListProps = {
   notes: Note[];
   onCreate: () => void;
   onEdit: (note: Note) => void;
+  onToggleCompleted: (note: Note) => Promise<void>;
   onToggleImportant: (note: Note) => Promise<void>;
   onUpdateTodos: (note: Note, todos: TodoItem[]) => Promise<void>;
   viewMode: NoteViewMode;
@@ -67,7 +68,7 @@ function groupNotes(notes: Note[], viewMode: Exclude<NoteViewMode, "grid" | "imp
 
 function renderCards(
   notes: Note[],
-  handlers: Pick<NoteListProps, "onEdit" | "onToggleImportant" | "onUpdateTodos">
+  handlers: Pick<NoteListProps, "onEdit" | "onToggleCompleted" | "onToggleImportant" | "onUpdateTodos">
 ) {
   return (
     <div className="note-grid">
@@ -76,6 +77,7 @@ function renderCards(
           key={note.id}
           note={note}
           onEdit={handlers.onEdit}
+          onToggleCompleted={handlers.onToggleCompleted}
           onToggleImportant={handlers.onToggleImportant}
           onUpdateTodos={handlers.onUpdateTodos}
         />
@@ -90,11 +92,12 @@ export function NoteList({
   notes,
   onCreate,
   onEdit,
+  onToggleCompleted,
   onToggleImportant,
   onUpdateTodos,
   viewMode
 }: NoteListProps) {
-  const handlers = { onEdit, onToggleImportant, onUpdateTodos };
+  const handlers = { onEdit, onToggleCompleted, onToggleImportant, onUpdateTodos };
 
   if (loading) {
     return (

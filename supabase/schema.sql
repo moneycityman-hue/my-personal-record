@@ -8,6 +8,7 @@ create table if not exists notes (
   todos jsonb not null default '[]'::jsonb,
   background_color text default '#FFFFFF',
   is_important boolean not null default false,
+  is_completed boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -19,6 +20,18 @@ create table if not exists important_links (
   url text not null,
   created_at timestamptz not null default now()
 );
+
+alter table notes
+add column if not exists is_completed boolean not null default false;
+
+create index if not exists notes_user_completed_created_at_idx
+on notes (user_id, is_completed, created_at desc);
+
+create index if not exists notes_user_important_created_at_idx
+on notes (user_id, is_important, created_at desc);
+
+create index if not exists important_links_user_created_at_idx
+on important_links (user_id, created_at asc);
 
 create or replace function update_updated_at_column()
 returns trigger as $$

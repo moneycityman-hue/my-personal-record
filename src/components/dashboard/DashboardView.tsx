@@ -10,9 +10,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { useImportantLinks } from "@/hooks/useImportantLinks";
 import { useNoteSearch } from "@/hooks/useNoteSearch";
 import { useNotes } from "@/hooks/useNotes";
-import type { Note, NoteInput } from "@/types/note";
+import type { ImportantLink } from "@/types/link";
+import type { Note, NoteInput, NoteStatusFilter } from "@/types/note";
 
 type DashboardViewProps = {
+  initialDataError?: string | null;
+  initialLinks?: ImportantLink[];
+  initialNotes?: Note[];
   initialUser: User;
 };
 
@@ -23,15 +27,21 @@ const viewModes: Array<{ label: string; value: NoteViewMode }> = [
   { label: "중요", value: "important" }
 ];
 
-export function DashboardView({ initialUser }: DashboardViewProps) {
+const statusFilters: Array<{ label: string; value: NoteStatusFilter }> = [
+  { label: "진행중", value: "active" },
+  { label: "완료", value: "completed" }
+];
+
+export function DashboardView({ initialDataError, initialLinks, initialNotes, initialUser }: DashboardViewProps) {
   const [query, setQuery] = useState("");
   const [viewMode, setViewMode] = useState<NoteViewMode>("grid");
+  const [statusFilter, setStatusFilter] = useState<NoteStatusFilter>("active");
   const [editorOpen, setEditorOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const auth = useAuth(initialUser);
-  const notes = useNotes(auth.user);
-  const links = useImportantLinks(auth.user);
+  const notes = useNotes(auth.user, { initialNotes, statusFilter });
+  const links = useImportantLinks(auth.user, initialLinks);
   const viewNotes = useMemo(() => {
     if (viewMode === "important") {
       return notes.notes.filter((note) => note.is_important);
@@ -47,11 +57,11 @@ export function DashboardView({ initialUser }: DashboardViewProps) {
     }
 
     if (viewMode === "important") {
-      return "중요 메모가 없습니다.";
+      return statusFilter === "completed" ? "완료된 중요 메모가 없습니다." : "진행 중인 중요 메모가 없습니다.";
     }
 
-    return "아직 메모가 없습니다.";
-  }, [query, viewMode]);
+    return statusFilter === "completed" ? "완료된 메모가 없습니다." : "진행 중인 메모가 없습니다.";
+  }, [query, statusFilter, viewMode]);
 
   function openNewNote() {
     setEditingNote(null);
@@ -119,27 +129,45 @@ export function DashboardView({ initialUser }: DashboardViewProps) {
             <div>
               <h1>Dashboard</h1>
             </div>
-            <div className="view-toggle" aria-label="메모 보기 방식">
-              {viewModes.map((item) => (
-                <button
-                  aria-pressed={viewMode === item.value}
-                  className={`view-button ${viewMode === item.value ? "active" : ""}`}
-                  key={item.value}
-                  onClick={() => setViewMode(item.value)}
-                  type="button"
-                >
-                  {item.label}
-                </button>
-              ))}
+            <div className="content-controls">
+              <div className="view-toggle" aria-label="메모 완료 필터">
+                {statusFilters.map((item) => (
+                  <button
+                    aria-pressed={statusFilter === item.value}
+                    className={`view-button ${statusFilter === item.value ? "active" : ""}`}
+                    key={item.value}
+                    onClick={() => setStatusFilter(item.value)}
+                    type="button"
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+              <div className="view-toggle" aria-label="메모 보기 방식">
+                {viewModes.map((item) => (
+                  <button
+                    aria-pressed={viewMode === item.value}
+                    className={`view-button ${viewMode === item.value ? "active" : ""}`}
+                    key={item.value}
+                    onClick={() => setViewMode(item.value)}
+                    type="button"
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-          {notes.error || actionError ? <p className="status-message">{notes.error ?? actionError}</p> : null}
+          {initialDataError || notes.error || actionError ? (
+            <p className="status-message">{notes.error ?? actionError ?? initialDataError}</p>
+          ) : null}
           <NoteList
             emptyLabel={emptyLabel}
             loading={notes.loading}
             notes={filteredNotes}
             onCreate={openNewNote}
             onEdit={openEditNote}
+            onToggleCompleted={(note) => guardedAction(() => notes.toggleCompleted(note))}
             onToggleImportant={(note) => guardedAction(() => notes.toggleImportant(note))}
             onUpdateTodos={(note, todos) => guardedAction(() => notes.updateTodos(note, todos))}
             viewMode={viewMode}

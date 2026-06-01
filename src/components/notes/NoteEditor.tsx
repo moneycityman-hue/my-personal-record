@@ -27,6 +27,7 @@ export function NoteEditor({ note, onClose, onDelete, onSave }: NoteEditorProps)
   const [todos, setTodos] = useState<TodoItem[]>(note?.todos ?? []);
   const [backgroundColor, setBackgroundColor] = useState(note?.background_color ?? "#FFFFFF");
   const [isImportant, setIsImportant] = useState(note?.is_important ?? false);
+  const [isCompleted, setIsCompleted] = useState(note?.is_completed ?? false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,7 +48,8 @@ export function NoteEditor({ note, onClose, onDelete, onSave }: NoteEditorProps)
         content: content.trim().slice(0, 500),
         todos: compactTodos(todos),
         background_color: backgroundColor,
-        is_important: isImportant
+        is_important: isImportant,
+        is_completed: isCompleted
       });
       onClose();
     } catch (saveError) {
@@ -104,6 +106,10 @@ export function NoteEditor({ note, onClose, onDelete, onSave }: NoteEditorProps)
         <label className="checkbox-row">
           <input checked={isImportant} onChange={(event) => setIsImportant(event.target.checked)} type="checkbox" />
           중요 메모
+        </label>
+        <label className="checkbox-row">
+          <input checked={isCompleted} onChange={(event) => setIsCompleted(event.target.checked)} type="checkbox" />
+          완료된 메모
         </label>
         {error ? <p className="status-message">{error}</p> : null}
         <div className="form-footer split">

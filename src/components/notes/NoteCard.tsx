@@ -1,6 +1,6 @@
 "use client";
 
-import { Star } from "lucide-react";
+import { CheckCircle2, RotateCcw, Star } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { formatDate } from "@/lib/utils";
 import type { Note, TodoItem } from "@/types/note";
@@ -8,6 +8,7 @@ import type { Note, TodoItem } from "@/types/note";
 type NoteCardProps = {
   note: Note;
   onEdit: (note: Note) => void;
+  onToggleCompleted: (note: Note) => Promise<void>;
   onToggleImportant: (note: Note) => Promise<void>;
   onUpdateTodos: (note: Note, todos: TodoItem[]) => Promise<void>;
 };
@@ -36,21 +37,34 @@ function linkifyContent(content: string) {
   });
 }
 
-export function NoteCard({ note, onEdit, onToggleImportant, onUpdateTodos }: NoteCardProps) {
+export function NoteCard({ note, onEdit, onToggleCompleted, onToggleImportant, onUpdateTodos }: NoteCardProps) {
   async function handleTodoToggle(todoId: string, completed: boolean) {
     const todos = note.todos.map((todo) => (todo.id === todoId ? { ...todo, completed } : todo));
     await onUpdateTodos(note, todos);
   }
 
   return (
-    <article className="note-card" style={{ background: note.background_color || "#FFFFFF" }}>
+    <article
+      className={`note-card ${note.is_completed ? "completed" : ""}`}
+      style={{ background: note.background_color || "#FFFFFF" }}
+    >
       <div className="note-card-header">
-        <h2>
-          <button className="note-title-button" onClick={() => onEdit(note)} type="button">
-            {note.title}
-          </button>
-        </h2>
+        <div className="note-title-area">
+          <h2>
+            <button className="note-title-button" onClick={() => onEdit(note)} type="button">
+              {note.title}
+            </button>
+          </h2>
+          {note.is_completed ? <span className="note-status">완료됨</span> : null}
+        </div>
         <div className="card-actions">
+          <Button
+            aria-label={note.is_completed ? "미완료로 되돌리기" : "메모 완료 처리"}
+            iconOnly
+            onClick={() => onToggleCompleted(note)}
+          >
+            {note.is_completed ? <RotateCcw size={17} /> : <CheckCircle2 size={17} />}
+          </Button>
           <Button
             aria-label={note.is_important ? "중요 메모 해제" : "중요 메모로 표시"}
             iconOnly

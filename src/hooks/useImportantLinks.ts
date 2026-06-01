@@ -1,16 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
+import { IMPORTANT_LINK_LIMIT, IMPORTANT_LINK_SELECT } from "@/lib/db-selects";
 import { createClient } from "@/lib/supabase/client";
 import { normalizeUrl } from "@/lib/utils";
 import type { ImportantLink, ImportantLinkInput } from "@/types/link";
 
-export function useImportantLinks(user: User | null) {
+export function useImportantLinks(user: User | null, initialLinks?: ImportantLink[]) {
   const supabase = useMemo(() => createClient(), []);
   const userId = user?.id ?? null;
-  const [links, setLinks] = useState<ImportantLink[]>([]);
-  const [loading, setLoading] = useState(true);
+  const initialLinksHandled = useRef(initialLinks !== undefined);
+  const [links, setLinks] = useState<ImportantLink[]>(() => initialLinks ?? []);
+  const [loading, setLoading] = useState(initialLinks === undefined);
   const [error, setError] = useState<string | null>(null);
 
   const fetchLinks = useCallback(async () => {
@@ -25,9 +27,10 @@ export function useImportantLinks(user: User | null) {
 
     const { data, error: fetchError } = await supabase
       .from("important_links")
-      .select("*")
+      .select(IMPORTANT_LINK_SELECT)
       .eq("user_id", userId)
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: true })
+      .limit(IMPORTANT_LINK_LIMIT);
 
     if (fetchError) {
       setError("링크를 불러오지 못했습니다.");
@@ -40,6 +43,12 @@ export function useImportantLinks(user: User | null) {
   }, [supabase, userId]);
 
   useEffect(() => {
+    if (initialLinksHandled.current) {
+      initialLinksHandled.current = false;
+      setLoading(false);
+      return;
+    }
+
     fetchLinks();
   }, [fetchLinks]);
 
@@ -55,7 +64,7 @@ export function useImportantLinks(user: User | null) {
         title: input.title.trim(),
         url: normalizeUrl(input.url)
       })
-      .select("*")
+      .select(IMPORTANT_LINK_SELECT)
       .single();
 
     if (insertError || !data) {

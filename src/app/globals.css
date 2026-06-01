@@ -199,6 +199,14 @@ a {
   margin: 0;
 }
 
+.content-controls {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
 .view-toggle {
   align-items: center;
   background: #ffffff;
@@ -394,11 +402,21 @@ a {
   padding: 16px;
 }
 
+.note-card.completed {
+  border-color: rgba(22, 163, 74, 0.32);
+}
+
 .note-card-header {
   align-items: flex-start;
   display: flex;
   gap: 10px;
   justify-content: space-between;
+}
+
+.note-title-area {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
 }
 
 .note-card h2 {
@@ -434,6 +452,20 @@ a {
 .card-actions {
   display: flex;
   gap: 4px;
+}
+
+.note-status {
+  align-items: center;
+  background: #dcfce7;
+  border: 1px solid #bbf7d0;
+  border-radius: 999px;
+  color: #166534;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 760;
+  min-height: 24px;
+  padding: 0 9px;
+  width: fit-content;
 }
 
 .note-content {
@@ -689,6 +721,11 @@ textarea.field {
     align-items: flex-start;
     flex-direction: column;
     gap: 12px;
+  }
+
+  .content-controls {
+    justify-content: stretch;
+    width: 100%;
   }
 
   .view-toggle {

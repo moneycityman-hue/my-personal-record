@@ -14,6 +14,7 @@ export type Database = {
           todos: TodoItem[];
           background_color: string;
           is_important: boolean;
+          is_completed: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -25,6 +26,7 @@ export type Database = {
           todos?: TodoItem[];
           background_color?: string;
           is_important?: boolean;
+          is_completed?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -36,6 +38,7 @@ export type Database = {
           todos?: TodoItem[];
           background_color?: string;
           is_important?: boolean;
+          is_completed?: boolean;
           created_at?: string;
           updated_at?: string;
         };
