@@ -6,6 +6,8 @@ import { DashboardView } from "@/components/dashboard/DashboardView";
 import type { ImportantLink } from "@/types/link";
 import type { Note } from "@/types/note";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage() {
   if (!hasSupabaseEnv()) {
     redirect("/login");
